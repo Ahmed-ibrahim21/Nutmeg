@@ -4,6 +4,9 @@ import com.wr.nutmeg.club.Club;
 import com.wr.nutmeg.club.ClubRepository;
 import com.wr.nutmeg.club.generation.ClubNameGenerator;
 import com.wr.nutmeg.common.enums.LeagueStatus;
+import com.wr.nutmeg.fixture.Fixture;
+import com.wr.nutmeg.fixture.FixtureRepository;
+import com.wr.nutmeg.fixture.FixtureSchedulerService;
 import com.wr.nutmeg.league.League;
 import com.wr.nutmeg.league.LeagueRepository;
 import com.wr.nutmeg.player.PlayerRepository;
@@ -12,11 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,6 +36,8 @@ public class GameWorldSeeder implements CommandLineRunner {
     private final PlayerRepository playerRepository;
     private final PlayerGenerationService playerGenerationService;
     private final ClubNameGenerator clubNameGenerator;
+    private final FixtureRepository fixtureRepository;
+    private final FixtureSchedulerService fixtureSchedulerService;
 
     public GameWorldSeeder(
             NutmegSeedProperties seedProperties,
@@ -39,7 +45,9 @@ public class GameWorldSeeder implements CommandLineRunner {
             ClubRepository clubRepository,
             PlayerRepository playerRepository,
             PlayerGenerationService playerGenerationService,
-            ClubNameGenerator clubNameGenerator
+            ClubNameGenerator clubNameGenerator,
+            FixtureRepository fixtureRepository,
+            FixtureSchedulerService fixtureSchedulerService
     ) {
         this.seedProperties = seedProperties;
         this.leagueRepository = leagueRepository;
@@ -47,6 +55,8 @@ public class GameWorldSeeder implements CommandLineRunner {
         this.playerRepository = playerRepository;
         this.playerGenerationService = playerGenerationService;
         this.clubNameGenerator = clubNameGenerator;
+        this.fixtureRepository = fixtureRepository;
+        this.fixtureSchedulerService = fixtureSchedulerService;
     }
 
     @Override
@@ -61,17 +71,23 @@ public class GameWorldSeeder implements CommandLineRunner {
         league = leagueRepository.save(league);
 
         Set<String> usedClubNames = new HashSet<>();
+        List<Club> clubs = new ArrayList<>();
         for (int i = 0; i < seedProperties.getClubCount(); i++) {
             Club club = createClub(league, usedClubNames);
             club = clubRepository.save(club);
             playerRepository.saveAll(playerGenerationService.generateSquad(league.getTier(), club));
+            clubs.add(club);
         }
 
+        List<Fixture> fixtures = fixtureSchedulerService.buildRoundRobinFixtures(league, clubs);
+        fixtureRepository.saveAll(fixtures);
+
         log.info(
-                "Seeded league '{}' with {} clubs and {} players.",
+                "Seeded league '{}' with {} clubs, {} players, and {} fixtures.",
                 league.getName(),
                 seedProperties.getClubCount(),
-                playerRepository.count()
+                playerRepository.count(),
+                fixtures.size()
         );
     }
 

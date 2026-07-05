@@ -61,6 +61,8 @@ public class Fixture {
 
     private Instant scheduledAt;
 
+    private Long matchSeed;
+
     @OneToMany(mappedBy = "fixture", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MatchEvent> events = new ArrayList<>();
 
