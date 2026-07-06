@@ -1,6 +1,7 @@
 package com.wr.nutmeg.match;
 
 import com.wr.nutmeg.club.Club;
+import com.wr.nutmeg.club.ClubLineup;
 import com.wr.nutmeg.common.enums.FixtureStatus;
 import com.wr.nutmeg.common.enums.MatchEvents;
 import com.wr.nutmeg.fixture.Fixture;
@@ -13,8 +14,6 @@ import com.wr.nutmeg.match.engine.SimulatedEvent;
 import com.wr.nutmeg.match.engine.TeamState;
 import com.wr.nutmeg.match.setup.LineupAssignment;
 import com.wr.nutmeg.match.setup.MatchSetupService;
-import com.wr.nutmeg.match.setup.MatchTeamSetup;
-import com.wr.nutmeg.match.setup.MatchTeamSetupRepository;
 import com.wr.nutmeg.match.tactics.Formation;
 import com.wr.nutmeg.match.tactics.FormationMatchupService;
 import com.wr.nutmeg.match.tactics.MatchupModifiers;
@@ -36,7 +35,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MatchSimulationService {
 
     private final FixtureRepository fixtureRepository;
-    private final MatchTeamSetupRepository matchTeamSetupRepository;
     private final MatchSetupService matchSetupService;
     private final PlayerRepository playerRepository;
     private final TacticsCoherenceValidator tacticsCoherenceValidator;
@@ -45,7 +43,6 @@ public class MatchSimulationService {
 
     public MatchSimulationService(
             FixtureRepository fixtureRepository,
-            MatchTeamSetupRepository matchTeamSetupRepository,
             MatchSetupService matchSetupService,
             PlayerRepository playerRepository,
             TacticsCoherenceValidator tacticsCoherenceValidator,
@@ -53,7 +50,6 @@ public class MatchSimulationService {
             MatchSimulator matchSimulator
     ) {
         this.fixtureRepository = fixtureRepository;
-        this.matchTeamSetupRepository = matchTeamSetupRepository;
         this.matchSetupService = matchSetupService;
         this.playerRepository = playerRepository;
         this.tacticsCoherenceValidator = tacticsCoherenceValidator;
@@ -70,8 +66,8 @@ public class MatchSimulationService {
             throw new IllegalStateException("Fixture already finished: " + fixtureId);
         }
 
-        MatchTeamSetup homeSetup = ensureSetup(fixture, fixture.getHomeClub(), true, Formation.F_4_3_3);
-        MatchTeamSetup awaySetup = ensureSetup(fixture, fixture.getAwayClub(), false, Formation.F_5_3_2);
+        ClubLineup homeLineup = matchSetupService.getOrCreateLineup(fixture.getHomeClub(), Formation.F_4_3_3);
+        ClubLineup awayLineup = matchSetupService.getOrCreateLineup(fixture.getAwayClub(), Formation.F_5_3_2);
 
         long seed = seedOverride != null
                 ? seedOverride
@@ -79,8 +75,8 @@ public class MatchSimulationService {
                 ? fixture.getMatchSeed()
                 : ThreadLocalRandom.current().nextLong();
 
-        TeamState home = toTeamState(homeSetup, awaySetup.getTactics().getFormation());
-        TeamState away = toTeamState(awaySetup, homeSetup.getTactics().getFormation());
+        TeamState home = toTeamState(homeLineup, true, awayLineup.getTactics().getFormation());
+        TeamState away = toTeamState(awayLineup, false, homeLineup.getTactics().getFormation());
 
         MatchResult result = matchSimulator.simulate(home, away, seed);
 
@@ -88,19 +84,11 @@ public class MatchSimulationService {
         return result;
     }
 
-    private MatchTeamSetup ensureSetup(Fixture fixture, Club club, boolean homeTeam, Formation defaultFormation) {
-        return matchTeamSetupRepository.findByFixtureIdAndClubId(fixture.getId(), club.getId())
-                .orElseGet(() -> {
-                    MatchTeamSetup setup = matchSetupService.buildDefaultSetup(fixture, club, homeTeam, defaultFormation);
-                    return matchTeamSetupRepository.save(setup);
-                });
-    }
-
-    private TeamState toTeamState(MatchTeamSetup setup, Formation opponentFormation) {
+    private TeamState toTeamState(ClubLineup clubLineup, boolean homeTeam, Formation opponentFormation) {
         Map<UUID, PlayerState> playersById = new HashMap<>();
         List<PlayerState> lineup = new ArrayList<>();
 
-        for (LineupAssignment assignment : setup.getLineup()) {
+        for (LineupAssignment assignment : clubLineup.getLineup()) {
             Player player = playerRepository.findById(assignment.getPlayerId())
                     .orElseThrow(() -> new IllegalStateException("Player not found: " + assignment.getPlayerId()));
             PlayerState state = PlayerState.from(player);
@@ -108,13 +96,13 @@ public class MatchSimulationService {
             lineup.add(state);
         }
 
-        TacticsProfile profile = tacticsCoherenceValidator.buildProfile(setup.getTactics());
+        TacticsProfile profile = tacticsCoherenceValidator.buildProfile(clubLineup.getTactics());
         MatchupModifiers matchup = formationMatchupService.modifiersFor(
-                setup.getTactics().getFormation(),
+                clubLineup.getTactics().getFormation(),
                 opponentFormation
         );
 
-        return new TeamState(setup.getClub(), setup.isHomeTeam(), profile, matchup, playersById, lineup);
+        return new TeamState(clubLineup.getClub(), homeTeam, profile, matchup, playersById, lineup);
     }
 
     private void persistResult(Fixture fixture, MatchResult result, long seed) {

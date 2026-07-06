@@ -1,8 +1,9 @@
 package com.wr.nutmeg.match.setup;
 
 import com.wr.nutmeg.club.Club;
+import com.wr.nutmeg.club.ClubLineup;
+import com.wr.nutmeg.club.ClubLineupRepository;
 import com.wr.nutmeg.common.enums.PlayerRole;
-import com.wr.nutmeg.fixture.Fixture;
 import com.wr.nutmeg.match.tactics.DefaultTacticsFactory;
 import com.wr.nutmeg.match.tactics.Formation;
 import com.wr.nutmeg.match.tactics.FormationSlot;
@@ -20,42 +21,46 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Reads a club's standing lineup, auto-generating and persisting a default
+ * one (best-XI by rating) the first time a club is asked for. Once a lineup
+ * exists it belongs to the club, not to any particular fixture, so it is
+ * simply reused for every match until it is next changed.
+ */
 @Service
 public class MatchSetupService {
 
-    private final MatchTeamSetupRepository matchTeamSetupRepository;
+    private final ClubLineupRepository clubLineupRepository;
     private final PlayerRepository playerRepository;
     private final DefaultTacticsFactory defaultTacticsFactory;
 
     public MatchSetupService(
-            MatchTeamSetupRepository matchTeamSetupRepository,
+            ClubLineupRepository clubLineupRepository,
             PlayerRepository playerRepository,
             DefaultTacticsFactory defaultTacticsFactory
     ) {
-        this.matchTeamSetupRepository = matchTeamSetupRepository;
+        this.clubLineupRepository = clubLineupRepository;
         this.playerRepository = playerRepository;
         this.defaultTacticsFactory = defaultTacticsFactory;
     }
 
-    @Transactional(readOnly = true)
-    public MatchTeamSetup getOrCreateDefaultSetup(Fixture fixture, Club club, boolean homeTeam, Formation formation) {
-        return matchTeamSetupRepository.findByFixtureIdAndClubId(fixture.getId(), club.getId())
-                .orElseGet(() -> buildDefaultSetup(fixture, club, homeTeam, formation));
+    @Transactional
+    public ClubLineup getOrCreateLineup(Club club, Formation defaultFormation) {
+        return clubLineupRepository.findByClubId(club.getId())
+                .orElseGet(() -> clubLineupRepository.save(buildDefaultLineup(club, defaultFormation)));
     }
 
-    public MatchTeamSetup buildDefaultSetup(Fixture fixture, Club club, boolean homeTeam, Formation formation) {
+    private ClubLineup buildDefaultLineup(Club club, Formation formation) {
         List<Player> squad = playerRepository.findAll().stream()
                 .filter(player -> player.getClub() != null && player.getClub().getId().equals(club.getId()))
                 .filter(player -> !player.isSuspended() && !player.isInjured())
                 .toList();
 
-        MatchTeamSetup setup = new MatchTeamSetup();
-        setup.setFixture(fixture);
-        setup.setClub(club);
-        setup.setHomeTeam(homeTeam);
-        setup.setTactics(defaultTacticsFactory.forFormation(formation));
-        setup.setLineup(buildLineup(squad, formation));
-        return setup;
+        ClubLineup clubLineup = new ClubLineup();
+        clubLineup.setClub(club);
+        clubLineup.setTactics(defaultTacticsFactory.forFormation(formation));
+        clubLineup.setLineup(buildLineup(squad, formation));
+        return clubLineup;
     }
 
     private List<LineupAssignment> buildLineup(List<Player> squad, Formation formation) {

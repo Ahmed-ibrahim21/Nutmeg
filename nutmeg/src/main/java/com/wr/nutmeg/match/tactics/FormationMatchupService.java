@@ -8,7 +8,8 @@ import java.util.Map;
 @Component
 public class FormationMatchupService {
 
-    private final Map<Formation, Map<Formation, MatchupModifiers>> matchups = new EnumMap<>(Formation.class);
+    private final Map<Formation, Map<Formation, MatchupModifiers>> matchups =
+     new EnumMap<>(Formation.class);
 
     public FormationMatchupService() {
         register(Formation.F_4_3_3, Formation.F_5_3_2,
