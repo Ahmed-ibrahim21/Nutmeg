@@ -8,7 +8,16 @@ public class ActionResolver {
 
     private static final double MIN_THRESHOLD = 15;
     private static final double MAX_THRESHOLD = 85;
-    private static final double HOME_ADVANTAGE = 4;
+    private static final double HOME_ADVANTAGE = 2;
+
+    private static final double MIN_GOAL_THRESHOLD = 4;
+    private static final double MAX_GOAL_THRESHOLD = 38;
+    private static final double GOAL_BASE = 7;
+    private static final double SHOOTING_WEIGHT = 0.15;
+    private static final double GOAL_ATTACK_BIAS_WEIGHT = 0.15;
+    private static final double GOAL_COHERENCE_WEIGHT = 3;
+    private static final double KEEPER_DEFENDING_WEIGHT = 0.13;
+    private static final double KEEPER_OVERALL_WEIGHT = 0.05;
 
     public double calculateThreshold(ActionType action, MatchContext context) {
         TeamState attacking = context.teamInPossession();
@@ -49,22 +58,22 @@ public class ActionResolver {
         PlayerState keeper = defending.goalkeeper();
         TacticsProfile attackTactics = attacking.tactics();
 
-        double threshold = 28;
-        threshold += shooter.shooting() * 0.28;
-        threshold += attackTactics.attackBias() * 0.30;
-        threshold += attacking.matchup().attackBias() * 0.20;
-        threshold += attackTactics.coherenceScore() * 6;
+        double threshold = GOAL_BASE;
+        threshold += shooter.shooting() * SHOOTING_WEIGHT;
+        threshold += attackTactics.attackBias() * GOAL_ATTACK_BIAS_WEIGHT;
+        threshold += attacking.matchup().attackBias() * 0.10;
+        threshold += attackTactics.coherenceScore() * GOAL_COHERENCE_WEIGHT;
 
         if (attacking.homeTeam()) {
             threshold += HOME_ADVANTAGE;
         }
 
-        threshold -= keeper.defending() * 0.22;
-        threshold -= keeper.overall() * 0.08;
-        threshold -= defending.tactics().defenseBias() * 0.25;
-        threshold -= defending.matchup().defenseBias() * 0.15;
+        threshold -= keeper.defending() * KEEPER_DEFENDING_WEIGHT;
+        threshold -= keeper.overall() * KEEPER_OVERALL_WEIGHT;
+        threshold -= defending.tactics().defenseBias() * 0.15;
+        threshold -= defending.matchup().defenseBias() * 0.10;
 
-        return clamp(threshold);
+        return clampGoal(threshold);
     }
 
     public boolean rollSuccess(double threshold, MatchContext context) {
@@ -114,5 +123,9 @@ public class ActionResolver {
 
     private double clamp(double value) {
         return Math.max(MIN_THRESHOLD, Math.min(MAX_THRESHOLD, value));
+    }
+
+    private double clampGoal(double value) {
+        return Math.max(MIN_GOAL_THRESHOLD, Math.min(MAX_GOAL_THRESHOLD, value));
     }
 }
