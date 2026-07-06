@@ -2,10 +2,10 @@ package com.wr.nutmeg.match.engine;
 
 import com.wr.nutmeg.club.Club;
 import com.wr.nutmeg.common.enums.PlayerRole;
-import com.wr.nutmeg.match.tactics.MatchupModifiers;
-import com.wr.nutmeg.match.tactics.TacticsCoherenceValidator;
-import com.wr.nutmeg.match.tactics.TacticsProfile;
-import com.wr.nutmeg.match.tactics.MatchTactics;
+import com.wr.nutmeg.tactics.MatchupModifiers;
+import com.wr.nutmeg.tactics.TacticsCoherenceValidator;
+import com.wr.nutmeg.tactics.TacticsProfile;
+import com.wr.nutmeg.tactics.MatchTactics;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

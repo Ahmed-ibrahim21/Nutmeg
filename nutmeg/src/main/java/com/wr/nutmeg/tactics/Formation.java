@@ -1,4 +1,4 @@
-package com.wr.nutmeg.match.tactics;
+package com.wr.nutmeg.tactics;
 
 public enum Formation {
     F_4_4_2(FormationArchetype.BALANCED, 4, 4, 2),

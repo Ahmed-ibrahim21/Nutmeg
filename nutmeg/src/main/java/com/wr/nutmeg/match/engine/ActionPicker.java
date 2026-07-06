@@ -73,7 +73,7 @@ public class ActionPicker {
             int widthBias,
             int longBallBias
     ) {
-        static TacticsProfileHolder from(com.wr.nutmeg.match.tactics.TacticsProfile profile) {
+        static TacticsProfileHolder from(com.wr.nutmeg.tactics.TacticsProfile profile) {
             return new TacticsProfileHolder(
                     (int) profile.attackBias(),
                     (int) profile.defenseBias(),

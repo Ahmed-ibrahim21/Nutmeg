@@ -1,4 +1,4 @@
-package com.wr.nutmeg.match.tactics;
+package com.wr.nutmeg.tactics;
 
 public enum MidfieldLine {
     PUSH_FORWARD,

@@ -1,4 +1,4 @@
-package com.wr.nutmeg.match.tactics;
+package com.wr.nutmeg.tactics;
 
 public record TacticsProfile(
         double attackBias,

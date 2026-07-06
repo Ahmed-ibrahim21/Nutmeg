@@ -2,8 +2,8 @@ package com.wr.nutmeg.match.engine;
 
 import com.wr.nutmeg.club.Club;
 import com.wr.nutmeg.common.enums.PlayerRole;
-import com.wr.nutmeg.match.tactics.MatchupModifiers;
-import com.wr.nutmeg.match.tactics.TacticsProfile;
+import com.wr.nutmeg.tactics.MatchupModifiers;
+import com.wr.nutmeg.tactics.TacticsProfile;
 
 import java.util.List;
 import java.util.Map;

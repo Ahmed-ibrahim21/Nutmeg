@@ -1,6 +1,4 @@
-package com.wr.nutmeg.match.tactics;
-
-import com.wr.nutmeg.match.tactics.MatchTactics;
+package com.wr.nutmeg.tactics;
 import org.springframework.stereotype.Component;
 
 @Component

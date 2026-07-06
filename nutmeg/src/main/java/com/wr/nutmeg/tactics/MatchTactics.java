@@ -1,4 +1,4 @@
-package com.wr.nutmeg.match.tactics;
+package com.wr.nutmeg.tactics;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

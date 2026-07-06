@@ -1,6 +1,6 @@
 package com.wr.nutmeg.match.engine;
 
-import com.wr.nutmeg.match.tactics.TacticsProfile;
+import com.wr.nutmeg.tactics.TacticsProfile;
 import org.springframework.stereotype.Component;
 
 @Component

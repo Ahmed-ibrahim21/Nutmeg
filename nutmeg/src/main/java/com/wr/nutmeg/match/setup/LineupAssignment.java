@@ -1,6 +1,6 @@
 package com.wr.nutmeg.match.setup;
 
-import com.wr.nutmeg.match.tactics.FormationSlot;
+import com.wr.nutmeg.tactics.FormationSlot;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;

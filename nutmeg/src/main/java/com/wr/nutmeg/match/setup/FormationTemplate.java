@@ -1,7 +1,7 @@
 package com.wr.nutmeg.match.setup;
 
-import com.wr.nutmeg.match.tactics.Formation;
-import com.wr.nutmeg.match.tactics.FormationSlot;
+import com.wr.nutmeg.tactics.Formation;
+import com.wr.nutmeg.tactics.FormationSlot;
 
 import java.util.EnumMap;
 import java.util.List;
