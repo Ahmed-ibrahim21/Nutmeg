@@ -9,12 +9,15 @@ import com.wr.nutmeg.fixture.FixtureRepository;
 import com.wr.nutmeg.fixture.FixtureSchedulerService;
 import com.wr.nutmeg.league.League;
 import com.wr.nutmeg.league.LeagueRepository;
+import com.wr.nutmeg.manager.Manager;
+import com.wr.nutmeg.manager.ManagerRepository;
 import com.wr.nutmeg.player.PlayerRepository;
 import com.wr.nutmeg.player.generation.PlayerGenerationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,31 +35,37 @@ public class GameWorldSeeder implements CommandLineRunner {
 
     private final NutmegSeedProperties seedProperties;
     private final LeagueRepository leagueRepository;
+    private final ManagerRepository managerRepository;
     private final ClubRepository clubRepository;
     private final PlayerRepository playerRepository;
     private final PlayerGenerationService playerGenerationService;
     private final ClubNameGenerator clubNameGenerator;
     private final FixtureRepository fixtureRepository;
     private final FixtureSchedulerService fixtureSchedulerService;
+    private final PasswordEncoder passwordEncoder;
 
     public GameWorldSeeder(
             NutmegSeedProperties seedProperties,
             LeagueRepository leagueRepository,
+            ManagerRepository managerRepository,
             ClubRepository clubRepository,
             PlayerRepository playerRepository,
             PlayerGenerationService playerGenerationService,
             ClubNameGenerator clubNameGenerator,
             FixtureRepository fixtureRepository,
-            FixtureSchedulerService fixtureSchedulerService
+            FixtureSchedulerService fixtureSchedulerService,
+            PasswordEncoder passwordEncoder
     ) {
         this.seedProperties = seedProperties;
         this.leagueRepository = leagueRepository;
+        this.managerRepository = managerRepository;
         this.clubRepository = clubRepository;
         this.playerRepository = playerRepository;
         this.playerGenerationService = playerGenerationService;
         this.clubNameGenerator = clubNameGenerator;
         this.fixtureRepository = fixtureRepository;
         this.fixtureSchedulerService = fixtureSchedulerService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -67,7 +76,10 @@ public class GameWorldSeeder implements CommandLineRunner {
             return;
         }
 
-        League league = createLeague();
+        Manager leagueOwner = createLeagueOwner();
+        leagueOwner = managerRepository.save(leagueOwner);
+
+        League league = createLeague(leagueOwner);
         league = leagueRepository.save(league);
 
         Set<String> usedClubNames = new HashSet<>();
@@ -91,13 +103,23 @@ public class GameWorldSeeder implements CommandLineRunner {
         );
     }
 
-    private League createLeague() {
+    private Manager createLeagueOwner() {
+        Manager owner = new Manager();
+        owner.setUsername("league-admin");
+        owner.setEmail("admin@nutmeg.local");
+        owner.setPasswordHash(passwordEncoder.encode(seedProperties.getAdminPassword()));
+        return owner;
+    }
+
+    private League createLeague(Manager leagueOwner) {
         League league = new League();
         league.setName(seedProperties.getLeagueName());
         league.setCountry(seedProperties.getCountry());
         league.setTier(seedProperties.getTier());
         league.setCurrentRound(0);
         league.setTotalRounds((seedProperties.getClubCount() - 1) * 2);
+        league.setClubsNumber(seedProperties.getClubCount());
+        league.setLeagueOwner(leagueOwner);
         league.setStatus(LeagueStatus.UPCOMING);
         return league;
     }

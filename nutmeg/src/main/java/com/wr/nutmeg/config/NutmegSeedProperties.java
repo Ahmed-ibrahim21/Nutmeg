@@ -14,4 +14,5 @@ public class NutmegSeedProperties {
     private String country = "England";
     private int tier = 3;
     private int clubCount = 8;
+    private String adminPassword = "admin123";
 }

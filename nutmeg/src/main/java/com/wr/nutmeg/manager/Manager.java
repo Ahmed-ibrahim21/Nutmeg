@@ -33,6 +33,9 @@ public class Manager {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
+    private String passwordHash;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "club_id", unique = true)
     private Club club;
