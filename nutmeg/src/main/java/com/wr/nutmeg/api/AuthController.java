@@ -3,7 +3,10 @@ package com.wr.nutmeg.api;
 import com.wr.nutmeg.auth.AuthService;
 import com.wr.nutmeg.auth.ManagerUserDetails;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +34,21 @@ public class AuthController {
     public AuthService.ManagerProfile me(@AuthenticationPrincipal ManagerUserDetails manager) {
         return authService.currentManager(manager);
     }
+
+    @PostMapping("/register")
+    public LoginResponse register(@Valid @RequestBody RegisterRequest request) {
+     AuthService.LoginResult result = authService.register(
+            request.username(), request.email(), request.password()
+      );
+    return LoginResponse.from(result);
+    }
+
+public record RegisterRequest(
+        @NotBlank String username,
+        @NotBlank @Email String email,
+        @NotBlank @Size(min = 8, message = "Password must be at least 8 characters") String password
+) {
+}
 
     public record LoginRequest(
             @NotBlank String login,

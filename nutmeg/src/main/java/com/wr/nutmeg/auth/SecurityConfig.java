@@ -40,8 +40,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/health").permitAll();
-                    auth.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll();
-                    if (isDevProfile()) {
+                    auth.requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll();                   
+                     if (isDevProfile()) {
                         auth.requestMatchers("/h2-console/**", "/api/dev/**").permitAll();
                     }
                     auth.anyRequest().authenticated();
