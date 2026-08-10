@@ -8,4 +8,6 @@ import java.util.UUID;
 public interface FixtureRepository extends JpaRepository<Fixture, UUID> {
 
     List<Fixture> findByLeagueIdAndStatus(UUID leagueId, com.wr.nutmeg.common.enums.FixtureStatus status);
+
+    List<Fixture> findByLeagueIdAndRoundAndStatus(UUID leagueId, int round, com.wr.nutmeg.common.enums.FixtureStatus status);
 }
