@@ -1,7 +1,5 @@
-package com.wr.nutmeg.api;
+package com.wr.nutmeg.auth;
 
-import com.wr.nutmeg.auth.AuthService;
-import com.wr.nutmeg.auth.ManagerUserDetails;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

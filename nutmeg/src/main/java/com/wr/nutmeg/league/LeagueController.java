@@ -1,8 +1,7 @@
-package com.wr.nutmeg.api;
+package com.wr.nutmeg.league;
 
 import com.wr.nutmeg.club.Club;
-import com.wr.nutmeg.league.League;
-import com.wr.nutmeg.league.LeagueService;
+
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

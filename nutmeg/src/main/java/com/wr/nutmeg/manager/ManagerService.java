@@ -1,8 +1,9 @@
 package com.wr.nutmeg.manager;
 
-import com.wr.nutmeg.api.ResourceNotFoundException;
 import com.wr.nutmeg.club.Club;
 import com.wr.nutmeg.club.ClubRepository;
+import com.wr.nutmeg.exceptions.ResourceNotFoundException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

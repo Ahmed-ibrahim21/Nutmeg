@@ -1,7 +1,7 @@
-package com.wr.nutmeg.api;
+package com.wr.nutmeg.manager;
 
 import com.wr.nutmeg.auth.ManagerUserDetails;
-import com.wr.nutmeg.manager.ManagerService;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

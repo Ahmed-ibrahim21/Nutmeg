@@ -1,4 +1,4 @@
-package com.wr.nutmeg.api;
+package com.wr.nutmeg.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
 

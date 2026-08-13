@@ -1,9 +1,9 @@
 package com.wr.nutmeg.league;
 
-import com.wr.nutmeg.api.ResourceNotFoundException;
 import com.wr.nutmeg.club.Club;
 import com.wr.nutmeg.club.ClubRepository;
 import com.wr.nutmeg.common.enums.FixtureStatus;
+import com.wr.nutmeg.exceptions.ResourceNotFoundException;
 import com.wr.nutmeg.fixture.Fixture;
 import com.wr.nutmeg.fixture.FixtureRepository;
 import com.wr.nutmeg.match.MatchSimulationService;
