@@ -6,6 +6,8 @@ import com.wr.nutmeg.common.enums.FixtureStatus;
 import com.wr.nutmeg.exceptions.ResourceNotFoundException;
 import com.wr.nutmeg.fixture.Fixture;
 import com.wr.nutmeg.fixture.FixtureRepository;
+import com.wr.nutmeg.league.dtos.FixtureResult;
+import com.wr.nutmeg.league.dtos.RoundSimulationResult;
 import com.wr.nutmeg.match.MatchSimulationService;
 import com.wr.nutmeg.match.engine.MatchResult;
 import org.springframework.data.domain.Page;
@@ -85,18 +87,5 @@ public class LeagueService {
         return new RoundSimulationResult(leagueId, round, results.size(), results);
     }
 
-    public record FixtureResult(
-            UUID fixtureId,
-            String homeClub,
-            String awayClub,
-            int homeScore,
-            int awayScore
-    ) {}
 
-    public record RoundSimulationResult(
-            UUID leagueId,
-            int roundSimulated,
-            int matchesPlayed,
-            List<FixtureResult> results
-    ) {}
 }

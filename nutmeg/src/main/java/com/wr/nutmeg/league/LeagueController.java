@@ -2,6 +2,7 @@ package com.wr.nutmeg.league;
 
 import com.wr.nutmeg.club.dtos.ClubResponse;
 import com.wr.nutmeg.league.dtos.PagedLeagueResponse;
+import com.wr.nutmeg.league.dtos.RoundSimulationResult;
 import com.wr.nutmeg.league.dtos.SimulationResponse;
 import com.wr.nutmeg.match.MatchSimulationService;
 import com.wr.nutmeg.match.engine.MatchResult;
@@ -42,7 +43,7 @@ public class LeagueController {
     }
 
     @PostMapping("/{leagueId}/simulate-round")
-    public LeagueService.RoundSimulationResult simulateRound(@PathVariable UUID leagueId) {
+    public RoundSimulationResult simulateRound(@PathVariable UUID leagueId) {
         return leagueService.simulateCurrentRound(leagueId);
     }
 

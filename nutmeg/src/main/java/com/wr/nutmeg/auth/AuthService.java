@@ -6,6 +6,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.wr.nutmeg.auth.dtos.LoginResult;
+import com.wr.nutmeg.auth.dtos.ManagerProfile;
 import com.wr.nutmeg.manager.Manager;
 import com.wr.nutmeg.manager.ManagerRepository;
 
@@ -68,21 +70,7 @@ public class AuthService {
         return ManagerProfile.from(managerDetails);
     }
 
-    public record LoginResult(
-            String accessToken,
-            String tokenType,
-            long expiresInMs,
-            ManagerProfile manager
-    ) {
-    }
+  
 
-    public record ManagerProfile(
-            java.util.UUID id,
-            String username,
-            String email
-    ) {
-        static ManagerProfile from(ManagerUserDetails details) {
-            return new ManagerProfile(details.getId(), details.getUsername(), details.getEmail());
-        }
-    }
+
 }
