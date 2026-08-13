@@ -1,7 +1,10 @@
 package com.wr.nutmeg.league;
 
-import com.wr.nutmeg.club.Club;
-
+import com.wr.nutmeg.club.dtos.ClubResponse;
+import com.wr.nutmeg.league.dtos.PagedLeagueResponse;
+import com.wr.nutmeg.league.dtos.SimulationResponse;
+import com.wr.nutmeg.match.MatchSimulationService;
+import com.wr.nutmeg.match.engine.MatchResult;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,9 +21,11 @@ import java.util.UUID;
 public class LeagueController {
 
     private final LeagueService leagueService;
+    private final MatchSimulationService matchSimulationService;
 
-    public LeagueController(LeagueService leagueService) {
+    public LeagueController(LeagueService leagueService, MatchSimulationService matchSimulationService) {
         this.leagueService = leagueService;
+        this.matchSimulationService = matchSimulationService;
     }
 
     @GetMapping
@@ -41,67 +46,14 @@ public class LeagueController {
         return leagueService.simulateCurrentRound(leagueId);
     }
 
-    // ---- Response DTOs ----
-
-    public record LeagueResponse(
-            UUID id,
-            String name,
-            String country,
-            int tier,
-            int currentRound,
-            int totalRounds,
-            int clubsNumber,
-            String status
+     @PostMapping("/{fixtureId}/simulate")
+    public SimulationResponse simulate(
+            @PathVariable UUID fixtureId,
+            @RequestParam(required = false) Long seed
     ) {
-        static LeagueResponse from(League league) {
-            return new LeagueResponse(
-                    league.getId(),
-                    league.getName(),
-                    league.getCountry(),
-                    league.getTier(),
-                    league.getCurrentRound(),
-                    league.getTotalRounds(),
-                    league.getClubsNumber(),
-                    league.getStatus().name()
-            );
-        }
+        MatchResult result = matchSimulationService.simulateFixture(fixtureId, seed);
+        return SimulationResponse.from(result);
     }
 
-    public record PagedLeagueResponse(
-            List<LeagueResponse> content,
-            int page,
-            int size,
-            long totalElements,
-            int totalPages
-    ) {
-        static PagedLeagueResponse from(Page<League> leaguePage) {
-            return new PagedLeagueResponse(
-                    leaguePage.getContent().stream().map(LeagueResponse::from).toList(),
-                    leaguePage.getNumber(),
-                    leaguePage.getSize(),
-                    leaguePage.getTotalElements(),
-                    leaguePage.getTotalPages()
-            );
-        }
-    }
 
-    public record ClubResponse(
-            UUID id,
-            String name,
-            String shortName,
-            String logoUrl,
-            String stadiumName,
-            long budget
-    ) {
-        static ClubResponse from(Club club) {
-            return new ClubResponse(
-                    club.getId(),
-                    club.getName(),
-                    club.getShortName(),
-                    club.getLogoUrl(),
-                    club.getStadiumName(),
-                    club.getBudget()
-            );
-        }
-    }
 }

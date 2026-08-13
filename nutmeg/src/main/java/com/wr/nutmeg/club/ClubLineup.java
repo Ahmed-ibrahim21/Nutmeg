@@ -1,6 +1,5 @@
 package com.wr.nutmeg.club;
 
-import com.wr.nutmeg.club.Club;
 import com.wr.nutmeg.match.setup.LineupAssignment;
 import com.wr.nutmeg.tactics.MatchTactics;
 import jakarta.persistence.CollectionTable;
