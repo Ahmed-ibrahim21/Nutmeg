@@ -2,8 +2,8 @@ package com.wr.nutmeg.league;
 
 import com.wr.nutmeg.club.Club;
 import com.wr.nutmeg.common.enums.LeagueStatus;
-import com.wr.nutmeg.fixture.Fixture;
 import com.wr.nutmeg.manager.Manager;
+import com.wr.nutmeg.match.Fixture;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,4 +1,4 @@
-package com.wr.nutmeg.fixture;
+package com.wr.nutmeg.match;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

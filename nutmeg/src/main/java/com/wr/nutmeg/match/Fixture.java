@@ -1,4 +1,4 @@
-package com.wr.nutmeg.fixture;
+package com.wr.nutmeg.match;
 
 import com.wr.nutmeg.club.Club;
 import com.wr.nutmeg.common.enums.FixtureStatus;

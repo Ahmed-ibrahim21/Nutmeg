@@ -3,6 +3,7 @@ package com.wr.nutmeg.manager;
 import com.wr.nutmeg.club.Club;
 import com.wr.nutmeg.club.ClubRepository;
 import com.wr.nutmeg.exceptions.ResourceNotFoundException;
+import com.wr.nutmeg.manager.dtos.AssignmentResult;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,10 +43,4 @@ public class ManagerService {
         return new AssignmentResult(manager.getId(), manager.getUsername(), club.getId(), club.getName());
     }
 
-    public record AssignmentResult(
-            UUID managerId,
-            String managerUsername,
-            UUID clubId,
-            String clubName
-    ) {}
 }

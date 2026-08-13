@@ -1,6 +1,5 @@
 package com.wr.nutmeg.match;
 
-import com.wr.nutmeg.fixture.FixtureRepository;
 import com.wr.nutmeg.match.engine.MatchResult;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
