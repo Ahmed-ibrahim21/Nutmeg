@@ -1,6 +1,7 @@
 package com.wr.nutmeg.match.engine;
 
 import com.wr.nutmeg.common.enums.MatchEvents;
+import com.wr.nutmeg.common.enums.PlayerRole;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -10,6 +11,9 @@ public class MatchSimulator {
 
     private static final int POSSESSIONS_PER_MATCH = 90;
     private static final int MAX_ACTIONS_PER_POSSESSION = 4;
+    private static final double CARD_BASE_CHANCE = 3.0;
+    private static final double CARD_RISK_WEIGHT = 0.5;
+    private static final double CARD_PHYSICAL_WEIGHT = 0.03;
 
     private final ActionPicker actionPicker;
     private final ActionResolver actionResolver;
@@ -67,6 +71,7 @@ public class MatchSimulator {
                         null,
                         action.name()
                 ));
+                rollForCard(context);
                 switchPossession(context);
                 return;
             }
@@ -96,17 +101,19 @@ public class MatchSimulator {
         double shotThreshold = actionResolver.calculateShotThreshold(context);
 
         if (actionResolver.rollGoal(shotThreshold, context)) {
+            PlayerState scorer = context.ballCarrier();
             context.score(context.possession());
             context.addEvent(new SimulatedEvent(
                     context.minute(),
                     MatchEvents.GOAL,
                     context.possession(),
-                    context.ballCarrier().id(),
-                    context.ballCarrier().name(),
+                    scorer.id(),
+                    scorer.name(),
                     null,
                     null,
                     "Goal"
             ));
+            generateAssist(context, scorer);
             return;
         }
 
@@ -137,6 +144,72 @@ public class MatchSimulator {
         ));
     }
 
+    private void generateAssist(MatchContext context, PlayerState scorer) {
+        List<PlayerState> teammates = context.teamInPossession().lineup().stream()
+                .filter(p -> p.role() != PlayerRole.GK)
+                .filter(p -> !p.id().equals(scorer.id()))
+                .toList();
+        if (teammates.isEmpty()) {
+            return;
+        }
+        PlayerState assister = teammates.get(context.random().nextInt(teammates.size()));
+        context.addEvent(new SimulatedEvent(
+                context.minute(),
+                MatchEvents.ASSIST,
+                context.possession(),
+                assister.id(),
+                assister.name(),
+                scorer.id(),
+                scorer.name(),
+                "Assist"
+        ));
+    }
+
+    /**
+     * After a turnover the defending team may commit a foul.
+     * Card probability is driven by the defender's tactics cardRisk + the tackler's physical stat.
+     */
+    private void rollForCard(MatchContext context) {
+        TeamState defending = context.defendingTeam();
+        TeamSide defendingSide = context.possession().opposite();
+        double cardRisk = defending.tactics().cardRisk();
+
+        double chance = CARD_BASE_CHANCE + cardRisk * CARD_RISK_WEIGHT;
+
+        PlayerState tackler = context.pickCarrier(defending, context.zone());
+        chance += tackler.physical() * CARD_PHYSICAL_WEIGHT;
+
+        int roll = context.random().nextInt(100);
+        if (roll >= chance) {
+            return;
+        }
+
+        int yellowCount = context.addYellowCard(tackler.id());
+        if (yellowCount >= 2) {
+            context.addEvent(new SimulatedEvent(
+                    context.minute(),
+                    MatchEvents.RED_CARD,
+                    defendingSide,
+                    tackler.id(),
+                    tackler.name(),
+                    null,
+                    null,
+                    "Second yellow card"
+            ));
+        } else {
+            context.addEvent(new SimulatedEvent(
+                    context.minute(),
+                    MatchEvents.YELLOW_CARD,
+                    defendingSide,
+                    tackler.id(),
+                    tackler.name(),
+                    null,
+                    null,
+                    "Yellow card"
+            ));
+        }
+    }
+
     private void switchPossession(MatchContext context) {
         TeamSide next = context.possession().opposite();
         context.setPossession(next);
@@ -144,3 +217,4 @@ public class MatchSimulator {
         context.setBallCarrier(context.pickCarrier(context.teamInPossession(), PitchZone.MIDFIELD));
     }
 }
+

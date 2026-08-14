@@ -50,6 +50,18 @@ public class MatchSetupService {
                 .orElseGet(() -> clubLineupRepository.save(buildDefaultLineup(club, defaultFormation)));
     }
 
+    @Transactional
+    public ClubLineup rebuildLineupForFormation(ClubLineup clubLineup, Formation newFormation) {
+        List<Player> squad = playerRepository.findAll().stream()
+                .filter(player -> player.getClub() != null && player.getClub().getId().equals(clubLineup.getClub().getId()))
+                .filter(player -> !player.isSuspended() && !player.isInjured())
+                .toList();
+
+        clubLineup.getLineup().clear();
+        clubLineup.getLineup().addAll(buildLineup(squad, newFormation));
+        return clubLineup;
+    }
+
     private ClubLineup buildDefaultLineup(Club club, Formation formation) {
         List<Player> squad = playerRepository.findAll().stream()
                 .filter(player -> player.getClub() != null && player.getClub().getId().equals(club.getId()))

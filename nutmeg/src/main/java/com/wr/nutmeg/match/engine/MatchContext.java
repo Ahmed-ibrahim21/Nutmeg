@@ -1,7 +1,9 @@
 package com.wr.nutmeg.match.engine;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -11,6 +13,7 @@ public final class MatchContext {
     private final TeamState away;
     private final Random random;
     private final List<SimulatedEvent> events = new ArrayList<>();
+    private final Map<UUID, Integer> yellowCards = new HashMap<>();
 
     private int minute;
     private TeamSide possession;
@@ -123,6 +126,14 @@ public final class MatchContext {
         }
     }
 
+    /**
+     * Records a yellow card for the player and returns the total yellow count
+     * for this match (2 means second yellow → red).
+     */
+    public int addYellowCard(UUID playerId) {
+        return yellowCards.merge(playerId, 1, Integer::sum);
+    }
+
     public PlayerState pickCarrier(TeamState team, PitchZone targetZone) {
         List<PlayerState> candidates = team.lineup().stream()
                 .filter(player -> player.role() != com.wr.nutmeg.common.enums.PlayerRole.GK)
@@ -147,3 +158,4 @@ public final class MatchContext {
         return teamSide == TeamSide.HOME ? home.club().getId() : away.club().getId();
     }
 }
+
