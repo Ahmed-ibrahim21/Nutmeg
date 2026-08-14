@@ -41,7 +41,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/health").permitAll();
                     auth.requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/leagues").permitAll();                   
+                    auth.requestMatchers(HttpMethod.GET, "/api/leagues").permitAll();
+                    auth.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll();
                      if (isDevProfile()) {
                         auth.requestMatchers("/h2-console/**", "/api/dev/**").permitAll();
                     }
