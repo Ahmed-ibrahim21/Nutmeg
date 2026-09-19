@@ -9,4 +9,5 @@ import com.wr.nutmeg.club.Club;
 
 public interface PlayerRepository extends JpaRepository<Player, UUID> {
      List<Player> findByClub(Club club);
+     List<Player> findByClubId(UUID clubId);
 }

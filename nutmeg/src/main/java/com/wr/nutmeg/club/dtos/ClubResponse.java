@@ -10,7 +10,7 @@ public record ClubResponse(
             String shortName,
             String logoUrl,
             String stadiumName,
-            long budget
+            long balance
     ) {
       public  static ClubResponse from(Club club) {
             return new ClubResponse(
@@ -19,7 +19,7 @@ public record ClubResponse(
                     club.getShortName(),
                     club.getLogoUrl(),
                     club.getStadiumName(),
-                    club.getBudget()
+                    club.getBalance()
             );
         }
     }

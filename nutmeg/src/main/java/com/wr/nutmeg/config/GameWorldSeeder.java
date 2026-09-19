@@ -130,7 +130,7 @@ public class GameWorldSeeder implements CommandLineRunner {
         club.setShortName(createShortName(club.getName()));
         club.setStadiumName(club.getName() + " Arena");
         club.setStadiumCapacity(12_000 + league.getTier() * 2_000);
-        club.setBudget(1_000_000L * league.getTier());
+        club.setBalance(1_000_000L * league.getTier());
         club.setLogoUrl(buildClubLogoUrl());
         club.setLeague(league);
         return club;

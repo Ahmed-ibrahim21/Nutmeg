@@ -48,6 +48,7 @@ public class MatchSimulationService {
     private final TacticsCoherenceValidator tacticsCoherenceValidator;
     private final FormationMatchupService formationMatchupService;
     private final MatchSimulator matchSimulator;
+    private final com.wr.nutmeg.finance.FinanceService financeService;
 
     public MatchSimulationService(
             FixtureRepository fixtureRepository,
@@ -55,7 +56,8 @@ public class MatchSimulationService {
             PlayerRepository playerRepository,
             TacticsCoherenceValidator tacticsCoherenceValidator,
             FormationMatchupService formationMatchupService,
-            MatchSimulator matchSimulator
+            MatchSimulator matchSimulator,
+            com.wr.nutmeg.finance.FinanceService financeService
     ) {
         this.fixtureRepository = fixtureRepository;
         this.matchSetupService = matchSetupService;
@@ -63,6 +65,7 @@ public class MatchSimulationService {
         this.tacticsCoherenceValidator = tacticsCoherenceValidator;
         this.formationMatchupService = formationMatchupService;
         this.matchSimulator = matchSimulator;
+        this.financeService = financeService;
     }
 
     @Transactional
@@ -150,6 +153,7 @@ public class MatchSimulationService {
         updateMorale(homeLineup, awayLineup, result.homeScore(), result.awayScore());
 
         fixtureRepository.save(fixture);
+        financeService.processMatchDayRevenue(fixture);
     }
 
     private void updatePlayerStats(SimulatedEvent event) {

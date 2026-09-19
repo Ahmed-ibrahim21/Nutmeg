@@ -44,7 +44,15 @@ public class Club {
 
     private int stadiumCapacity;
 
-    private long budget;
+    private long balance;
+
+    public long getBudget() {
+        return balance;
+    }
+
+    public void setBudget(long budget) {
+        this.balance = budget;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "league_id")

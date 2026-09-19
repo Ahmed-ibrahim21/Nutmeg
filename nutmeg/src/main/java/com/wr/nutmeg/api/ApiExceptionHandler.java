@@ -81,4 +81,9 @@ public class ApiExceptionHandler {
     public ProblemDetail handleInvalidArguments(InvalidArgumentsException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
+
+    @ExceptionHandler(com.wr.nutmeg.finance.InsufficientFundsException.class)
+    public ProblemDetail handleInsufficientFunds(com.wr.nutmeg.finance.InsufficientFundsException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
 }
