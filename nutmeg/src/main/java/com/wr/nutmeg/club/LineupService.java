@@ -5,10 +5,7 @@ import com.wr.nutmeg.club.dtos.LineupPlayerResponse;
 import com.wr.nutmeg.club.dtos.LineupResponse;
 import com.wr.nutmeg.club.dtos.SetLineupRequest;
 import com.wr.nutmeg.exceptions.InvalidArgumentsException;
-import com.wr.nutmeg.exceptions.InvlaidStateException;
 import com.wr.nutmeg.exceptions.ResourceNotFoundException;
-import com.wr.nutmeg.manager.Manager;
-import com.wr.nutmeg.manager.ManagerRepository;
 import com.wr.nutmeg.match.setup.FormationTemplate;
 import com.wr.nutmeg.match.setup.LineupAssignment;
 import com.wr.nutmeg.match.setup.MatchSetupService;
@@ -30,40 +27,40 @@ import java.util.stream.Collectors;
 @Service
 public class LineupService {
 
-    private final ManagerRepository managerRepository;
+    private final ClubRepository clubRepository;
     private final ClubLineupRepository clubLineupRepository;
     private final PlayerRepository playerRepository;
     private final MatchSetupService matchSetupService;
 
     public LineupService(
-            ManagerRepository managerRepository,
+            ClubRepository clubRepository,
             ClubLineupRepository clubLineupRepository,
             PlayerRepository playerRepository,
             MatchSetupService matchSetupService
     ) {
-        this.managerRepository = managerRepository;
+        this.clubRepository = clubRepository;
         this.clubLineupRepository = clubLineupRepository;
         this.playerRepository = playerRepository;
         this.matchSetupService = matchSetupService;
     }
 
     @Transactional(readOnly = true)
-    public LineupResponse getLineup(UUID managerId) {
-        Manager manager = loadManagerWithClub(managerId);
-        ClubLineup clubLineup = clubLineupRepository.findByClubId(manager.getClub().getId())
-                .orElseGet(() -> matchSetupService.getOrCreateLineup(manager.getClub(), Formation.F_4_4_2));
+    public LineupResponse getLineup(UUID clubId) {
+        Club club = loadClub(clubId);
+        ClubLineup clubLineup = clubLineupRepository.findByClubId(clubId)
+                .orElseGet(() -> matchSetupService.getOrCreateLineup(club, Formation.F_4_4_2));
 
         return toResponse(clubLineup);
     }
 
     @Transactional
-    public LineupResponse updateLineup(UUID managerId, SetLineupRequest request) {
-        Manager manager = loadManagerWithClub(managerId);
-        ClubLineup clubLineup = clubLineupRepository.findByClubId(manager.getClub().getId())
-                .orElseGet(() -> matchSetupService.getOrCreateLineup(manager.getClub(), Formation.F_4_4_2));
+    public LineupResponse updateLineup(UUID clubId, SetLineupRequest request) {
+        Club club = loadClub(clubId);
+        ClubLineup clubLineup = clubLineupRepository.findByClubId(clubId)
+                .orElseGet(() -> matchSetupService.getOrCreateLineup(club, Formation.F_4_4_2));
 
         Formation currentFormation = clubLineup.getTactics().getFormation();
-        validateLineup(request.lineup(), currentFormation, manager.getClub().getId());
+        validateLineup(request.lineup(), currentFormation, clubId);
 
         clubLineup.getLineup().clear();
         for (LineupAssignmentDto dto : request.lineup()) {
@@ -148,12 +145,9 @@ public class LineupService {
         return new LineupResponse(clubLineup.getTactics().getFormation(), players);
     }
 
-    private Manager loadManagerWithClub(UUID managerId) {
-        Manager manager = managerRepository.findById(managerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Manager not found: " + managerId));
-        if (manager.getClub() == null) {
-            throw new InvlaidStateException("Manager does not manage any club yet");
-        }
-        return manager;
+    private Club loadClub(UUID clubId) {
+        return clubRepository.findById(clubId)
+                .orElseThrow(() -> new ResourceNotFoundException("Club not found: " + clubId));
     }
 }
+
