@@ -84,6 +84,6 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(com.wr.nutmeg.finance.InsufficientFundsException.class)
     public ProblemDetail handleInsufficientFunds(com.wr.nutmeg.finance.InsufficientFundsException ex) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_ACCEPTABLE, ex.getMessage());
     }
 }
