@@ -18,7 +18,7 @@ class PlayerGenerationServiceTest {
 
     @BeforeEach
     void setUp() {
-        playerGenerationService = new PlayerGenerationService(new AttributeGenerator(), new NameGenerator());
+        playerGenerationService = new PlayerGenerationService(new AttributeGenerator(), new NameGenerator(), null);
     }
 
     @Test

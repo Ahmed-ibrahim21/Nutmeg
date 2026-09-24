@@ -10,6 +10,7 @@ import com.wr.nutmeg.match.Fixture;
 import com.wr.nutmeg.match.FixtureRepository;
 import com.wr.nutmeg.match.MatchSimulationService;
 import com.wr.nutmeg.match.engine.MatchResult;
+import com.wr.nutmeg.finance.WageEnforcementService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -29,17 +30,23 @@ public class LeagueService {
     private final ClubRepository clubRepository;
     private final FixtureRepository fixtureRepository;
     private final MatchSimulationService matchSimulationService;
+    private final WageEnforcementService wageEnforcementService;
+    private final com.wr.nutmeg.finance.FinanceService financeService;
 
     public LeagueService(
             LeagueRepository leagueRepository,
             ClubRepository clubRepository,
             FixtureRepository fixtureRepository,
-            MatchSimulationService matchSimulationService
+            MatchSimulationService matchSimulationService,
+            WageEnforcementService wageEnforcementService,
+            com.wr.nutmeg.finance.FinanceService financeService
     ) {
         this.leagueRepository = leagueRepository;
         this.clubRepository = clubRepository;
         this.fixtureRepository = fixtureRepository;
         this.matchSimulationService = matchSimulationService;
+        this.wageEnforcementService = wageEnforcementService;
+        this.financeService = financeService;
     }
 
     public Page<League> getPublicLeagues(int page) {
@@ -83,6 +90,15 @@ public class LeagueService {
 
         league.setCurrentRound(round);
         leagueRepository.save(league);
+
+        // ── Post-round financial processing ─────────────────────────────
+        wageEnforcementService.processLeagueWages(leagueId);
+        wageEnforcementService.revalueLeaguePlayers(leagueId);
+        financeService.processCommercialRevenue(leagueId);
+        
+        if (round == league.getTotalRounds()) {
+            financeService.processSeasonEndPrizeMoney(leagueId);
+        }
 
         return new RoundSimulationResult(leagueId, round, results.size(), results);
     }

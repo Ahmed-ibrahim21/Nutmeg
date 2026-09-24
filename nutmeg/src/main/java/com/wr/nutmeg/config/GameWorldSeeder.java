@@ -133,6 +133,7 @@ public class GameWorldSeeder implements CommandLineRunner {
         club.setBalance(5_000_000L * league.getTier());
         club.setLogoUrl(buildClubLogoUrl());
         club.setLeague(league);
+
         return club;
     }
 
