@@ -6,6 +6,7 @@ import com.wr.nutmeg.club.generation.ClubNameGenerator;
 import com.wr.nutmeg.common.enums.LeagueStatus;
 import com.wr.nutmeg.league.League;
 import com.wr.nutmeg.league.LeagueRepository;
+import com.wr.nutmeg.league.LeagueStandingService;
 import com.wr.nutmeg.manager.Manager;
 import com.wr.nutmeg.manager.ManagerRepository;
 import com.wr.nutmeg.match.Fixture;
@@ -42,6 +43,7 @@ public class GameWorldSeeder implements CommandLineRunner {
     private final ClubNameGenerator clubNameGenerator;
     private final FixtureRepository fixtureRepository;
     private final FixtureSchedulerService fixtureSchedulerService;
+    private final LeagueStandingService leagueStandingService;
     private final PasswordEncoder passwordEncoder;
 
     public GameWorldSeeder(
@@ -54,6 +56,7 @@ public class GameWorldSeeder implements CommandLineRunner {
             ClubNameGenerator clubNameGenerator,
             FixtureRepository fixtureRepository,
             FixtureSchedulerService fixtureSchedulerService,
+            LeagueStandingService leagueStandingService,
             PasswordEncoder passwordEncoder
     ) {
         this.seedProperties = seedProperties;
@@ -65,6 +68,7 @@ public class GameWorldSeeder implements CommandLineRunner {
         this.clubNameGenerator = clubNameGenerator;
         this.fixtureRepository = fixtureRepository;
         this.fixtureSchedulerService = fixtureSchedulerService;
+        this.leagueStandingService = leagueStandingService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -93,6 +97,7 @@ public class GameWorldSeeder implements CommandLineRunner {
 
         List<Fixture> fixtures = fixtureSchedulerService.buildRoundRobinFixtures(league, clubs);
         fixtureRepository.saveAll(fixtures);
+        leagueStandingService.initializeStandings(league, clubs);
 
         log.info(
                 "Seeded league '{}' with {} clubs, {} players, and {} fixtures.",

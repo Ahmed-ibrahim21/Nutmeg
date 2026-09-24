@@ -6,6 +6,7 @@ import com.wr.nutmeg.common.enums.FixtureStatus;
 import com.wr.nutmeg.common.enums.MatchEvents;
 import com.wr.nutmeg.exceptions.InvalidArgumentsException;
 import com.wr.nutmeg.exceptions.InvlaidStateException;
+import com.wr.nutmeg.league.LeagueStandingService;
 import com.wr.nutmeg.match.engine.MatchResult;
 import com.wr.nutmeg.match.engine.MatchSimulator;
 import com.wr.nutmeg.match.engine.PlayerState;
@@ -49,6 +50,7 @@ public class MatchSimulationService {
     private final FormationMatchupService formationMatchupService;
     private final MatchSimulator matchSimulator;
     private final com.wr.nutmeg.finance.FinanceService financeService;
+    private final LeagueStandingService leagueStandingService;
 
     public MatchSimulationService(
             FixtureRepository fixtureRepository,
@@ -57,7 +59,8 @@ public class MatchSimulationService {
             TacticsCoherenceValidator tacticsCoherenceValidator,
             FormationMatchupService formationMatchupService,
             MatchSimulator matchSimulator,
-            com.wr.nutmeg.finance.FinanceService financeService
+            com.wr.nutmeg.finance.FinanceService financeService,
+            LeagueStandingService leagueStandingService
     ) {
         this.fixtureRepository = fixtureRepository;
         this.matchSetupService = matchSetupService;
@@ -66,6 +69,7 @@ public class MatchSimulationService {
         this.formationMatchupService = formationMatchupService;
         this.matchSimulator = matchSimulator;
         this.financeService = financeService;
+        this.leagueStandingService = leagueStandingService;
     }
 
     @Transactional
@@ -154,6 +158,7 @@ public class MatchSimulationService {
         updateDevelopment(homeLineup, awayLineup);
 
         fixtureRepository.save(fixture);
+        leagueStandingService.applyFixtureResult(fixture);
         financeService.processMatchDayRevenue(fixture);
         financeService.processMatchBonuses(fixture);
     }

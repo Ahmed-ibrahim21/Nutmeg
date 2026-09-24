@@ -1,6 +1,7 @@
 package com.wr.nutmeg.league;
 
 import com.wr.nutmeg.club.dtos.ClubResponse;
+import com.wr.nutmeg.league.dtos.LeagueTableResponse;
 import com.wr.nutmeg.league.dtos.PagedLeagueResponse;
 import com.wr.nutmeg.league.dtos.RoundSimulationResult;
 import com.wr.nutmeg.league.dtos.SimulationResponse;
@@ -28,14 +29,20 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/leagues")
-@Tag(name = "League", description = "Browse leagues, view clubs, and simulate matches")
+@Tag(name = "League", description = "Browse leagues, view clubs, tables, and simulate matches")
 public class LeagueController {
 
     private final LeagueService leagueService;
+    private final LeagueStandingService leagueStandingService;
     private final MatchSimulationService matchSimulationService;
 
-    public LeagueController(LeagueService leagueService, MatchSimulationService matchSimulationService) {
+    public LeagueController(
+            LeagueService leagueService,
+            LeagueStandingService leagueStandingService,
+            MatchSimulationService matchSimulationService
+    ) {
         this.leagueService = leagueService;
+        this.leagueStandingService = leagueStandingService;
         this.matchSimulationService = matchSimulationService;
     }
 
@@ -55,6 +62,24 @@ public class LeagueController {
     ) {
         Page<League> leagues = leagueService.getPublicLeagues(page);
         return PagedLeagueResponse.from(leagues);
+    }
+
+    @Operation(
+            summary = "Get league table",
+            description = "Returns the current league standings sorted by points, then goal difference, then goals scored."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "League table returned",
+                    content = @Content(schema = @Schema(implementation = LeagueTableResponse.class))),
+            @ApiResponse(responseCode = "404", description = "League not found",
+                    content = @Content)
+    })
+    @GetMapping("/{leagueId}/table")
+    public LeagueTableResponse getTable(
+            @Parameter(description = "League ID", required = true)
+            @PathVariable UUID leagueId
+    ) {
+        return leagueStandingService.getTable(leagueId);
     }
 
     @Operation(

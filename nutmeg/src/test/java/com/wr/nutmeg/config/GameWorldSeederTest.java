@@ -2,6 +2,7 @@ package com.wr.nutmeg.config;
 
 import com.wr.nutmeg.club.ClubRepository;
 import com.wr.nutmeg.league.LeagueRepository;
+import com.wr.nutmeg.league.LeagueStandingRepository;
 import com.wr.nutmeg.player.PlayerRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +27,15 @@ class GameWorldSeederTest {
     @Autowired
     private PlayerRepository playerRepository;
 
+    @Autowired
+    private LeagueStandingRepository leagueStandingRepository;
+
     @Test
     void seedsLeagueClubsAndPlayersOnStartup() {
         assertThat(leagueRepository.count()).isEqualTo(1);
         assertThat(clubRepository.count()).isEqualTo(8);
         assertThat(playerRepository.count()).isEqualTo(160);
+        assertThat(leagueStandingRepository.count()).isEqualTo(8);
 
         assertThat(playerRepository.findAll())
                 .allMatch(player -> player.getClub() != null)
