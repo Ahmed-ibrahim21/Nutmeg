@@ -151,9 +151,11 @@ public class MatchSimulationService {
         updateAppearances(homeLineup, awayLineup);
         updateFitness(homeLineup, awayLineup);
         updateMorale(homeLineup, awayLineup, result.homeScore(), result.awayScore());
+        updateDevelopment(homeLineup, awayLineup);
 
         fixtureRepository.save(fixture);
         financeService.processMatchDayRevenue(fixture);
+        financeService.processMatchBonuses(fixture);
     }
 
     private void updatePlayerStats(SimulatedEvent event) {
@@ -220,6 +222,46 @@ public class MatchSimulationService {
                 int newMorale = Math.max(MIN_MORALE, Math.min(MAX_MORALE, player.getMorale() + change));
                 player.setMorale(newMorale);
             });
+        }
+    }
+
+    private void updateDevelopment(ClubLineup homeLineup, ClubLineup awayLineup) {
+        Set<UUID> participantIds = new HashSet<>();
+        homeLineup.getLineup().forEach(a -> participantIds.add(a.getPlayerId()));
+        awayLineup.getLineup().forEach(a -> participantIds.add(a.getPlayerId()));
+
+        for (UUID playerId : participantIds) {
+            playerRepository.findById(playerId).ifPresent(player -> {
+                int age = player.getAge();
+                int overall = player.getOverallRating();
+                int potential = player.getPotential();
+                
+                // Young players develop if below potential
+                if (age <= 24 && overall < potential) {
+                    if (ThreadLocalRandom.current().nextInt(100) < 15) { 
+                        bumpRandomAttribute(player, 1);
+                    }
+                }
+                // Older players decline over time
+                else if (age >= 32) {
+                    if (ThreadLocalRandom.current().nextInt(100) < 10) { 
+                        bumpRandomAttribute(player, -1);
+                    }
+                }
+            });
+        }
+    }
+
+    private void bumpRandomAttribute(Player player, int amount) {
+        int attr = ThreadLocalRandom.current().nextInt(7);
+        switch (attr) {
+            case 0 -> player.setPace(Math.max(1, Math.min(99, player.getPace() + amount)));
+            case 1 -> player.setShooting(Math.max(1, Math.min(99, player.getShooting() + amount)));
+            case 2 -> player.setPassing(Math.max(1, Math.min(99, player.getPassing() + amount)));
+            case 3 -> player.setDribbling(Math.max(1, Math.min(99, player.getDribbling() + amount)));
+            case 4 -> player.setDefending(Math.max(1, Math.min(99, player.getDefending() + amount)));
+            case 5 -> player.setPhysical(Math.max(1, Math.min(99, player.getPhysical() + amount)));
+            case 6 -> player.setStamina(Math.max(1, Math.min(99, player.getStamina() + amount)));
         }
     }
 }

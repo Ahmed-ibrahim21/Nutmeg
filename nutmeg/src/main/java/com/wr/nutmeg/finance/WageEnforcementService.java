@@ -16,8 +16,6 @@ import java.util.UUID;
 /**
  * Orchestrates wage-related constraints and periodic financial operations.
  * <ul>
- *     <li><b>Wage-cap enforcement</b> – checks whether a club can afford a
- *         new player's wage within its cap before signing.</li>
  *     <li><b>Automatic wage processing</b> – deducts wages for every club
  *         in a league at the end of a round.</li>
  *     <li><b>Revaluation</b> – recalculates market values and wages for
@@ -45,44 +43,7 @@ public class WageEnforcementService {
         this.financeService = financeService;
     }
 
-    // ── Wage-cap check ──────────────────────────────────────────────────────
 
-    /**
-     * Returns {@code true} if the buying club can absorb the incoming player's
-     * weekly wage without exceeding its wage cap.
-     *
-     * @param buyingClubId the club attempting to sign the player
-     * @param incomingPlayer the player being signed
-     * @return true if the wage cap allows the signing
-     */
-    @Transactional(readOnly = true)
-    public boolean canAffordWage(UUID buyingClubId, Player incomingPlayer) {
-        Club club = clubRepository.findById(buyingClubId)
-                .orElseThrow(() -> new ResourceNotFoundException("Club not found: " + buyingClubId));
-
-        if (club.getWageCap() <= 0) {
-            return true; // no cap enforced
-        }
-
-        long currentWageBill = financeService.calculateWeeklyWageBill(buyingClubId);
-        return (currentWageBill + incomingPlayer.getWeeklyWage()) <= club.getWageCap();
-    }
-
-    /**
-     * Returns how much weekly wage headroom the club has left.
-     */
-    @Transactional(readOnly = true)
-    public long wageHeadroom(UUID clubId) {
-        Club club = clubRepository.findById(clubId)
-                .orElseThrow(() -> new ResourceNotFoundException("Club not found: " + clubId));
-
-        if (club.getWageCap() <= 0) {
-            return Long.MAX_VALUE; // effectively unlimited
-        }
-
-        long currentWageBill = financeService.calculateWeeklyWageBill(clubId);
-        return Math.max(0, club.getWageCap() - currentWageBill);
-    }
 
     // ── Periodic processing ─────────────────────────────────────────────────
 

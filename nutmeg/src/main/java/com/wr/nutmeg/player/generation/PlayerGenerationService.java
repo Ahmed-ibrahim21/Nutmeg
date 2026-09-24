@@ -4,6 +4,7 @@ import com.wr.nutmeg.club.Club;
 import com.wr.nutmeg.common.enums.Position;
 import com.wr.nutmeg.common.enums.PreferredFoot;
 import com.wr.nutmeg.player.Player;
+import com.wr.nutmeg.player.PlayerValuationService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,10 +23,16 @@ public class PlayerGenerationService {
 
     private final AttributeGenerator attributeGenerator;
     private final NameGenerator nameGenerator;
+    private final PlayerValuationService valuationService;
 
-    public PlayerGenerationService(AttributeGenerator attributeGenerator, NameGenerator nameGenerator) {
+    public PlayerGenerationService(
+            AttributeGenerator attributeGenerator,
+            NameGenerator nameGenerator,
+            PlayerValuationService valuationService
+    ) {
         this.attributeGenerator = attributeGenerator;
         this.nameGenerator = nameGenerator;
+        this.valuationService = valuationService;
     }
 
     public Player generate(PlayerGenerationRequest request) {
@@ -52,8 +59,7 @@ public class PlayerGenerationService {
         player.setCurrentFitness(100);
         player.setMorale(75);
         player.setPotential(calculatePotential(overall, age));
-        player.setMarketValue(calculateMarketValue(overall, request.tier()));
-        player.setWeeklyWage(calculateWeeklyWage(player.getMarketValue()));
+        valuationService.revalue(player);
         player.setContractExpiry(LocalDate.now().plusYears(randomContractYears()));
         player.setJerseyNumber(request.jerseyNumber());
         return player;
@@ -119,20 +125,6 @@ public class PlayerGenerationService {
                 ? ThreadLocalRandom.current().nextInt(8, 21)
                 : ThreadLocalRandom.current().nextInt(5, 16);
         return Math.min(99, Math.max(overall, overall + bonus));
-    }
-
-    private long calculateMarketValue(int overall, int tier) {
-        double tierMultiplier = switch (tier) {
-            case 1 -> 1.5;
-            case 2 -> 1.2;
-            case 3 -> 1.0;
-            default -> 0.8;
-        };
-        return Math.round(overall * overall * tierMultiplier * 1_000L);
-    }
-
-    private long calculateWeeklyWage(long marketValue) {
-        return Math.max(500L, marketValue / 200L);
     }
 
     private int randomContractYears() {

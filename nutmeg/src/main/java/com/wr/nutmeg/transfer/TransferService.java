@@ -8,9 +8,11 @@ import com.wr.nutmeg.exceptions.InvlaidStateException;
 import com.wr.nutmeg.exceptions.ResourceNotFoundException;
 import com.wr.nutmeg.finance.FinanceService;
 import com.wr.nutmeg.finance.TransactionType;
+import com.wr.nutmeg.finance.WageEnforcementService;
 import com.wr.nutmeg.match.setup.LineupAssignment;
 import com.wr.nutmeg.player.Player;
 import com.wr.nutmeg.player.PlayerRepository;
+import com.wr.nutmeg.player.PlayerValuationService;
 import com.wr.nutmeg.transfer.dtos.ListPlayerRequest;
 import com.wr.nutmeg.transfer.dtos.MakeOfferRequest;
 import com.wr.nutmeg.transfer.dtos.PlayerSummaryResponse;
@@ -38,6 +40,8 @@ public class TransferService {
     private final TransferListingRepository listingRepository;
     private final TransferOfferRepository offerRepository;
     private final FinanceService financeService;
+    private final WageEnforcementService wageEnforcementService;
+    private final PlayerValuationService valuationService;
 
     public TransferService(
             ClubRepository clubRepository,
@@ -45,7 +49,9 @@ public class TransferService {
             ClubLineupRepository clubLineupRepository,
             TransferListingRepository listingRepository,
             TransferOfferRepository offerRepository,
-            FinanceService financeService
+            FinanceService financeService,
+            WageEnforcementService wageEnforcementService,
+            PlayerValuationService valuationService
     ) {
         this.clubRepository = clubRepository;
         this.playerRepository = playerRepository;
@@ -53,6 +59,8 @@ public class TransferService {
         this.listingRepository = listingRepository;
         this.offerRepository = offerRepository;
         this.financeService = financeService;
+        this.wageEnforcementService = wageEnforcementService;
+        this.valuationService = valuationService;
     }
 
     @Transactional(readOnly = true)
@@ -243,6 +251,7 @@ public class TransferService {
 
         Club buyingClub = offer.getBuyingClub();
         player.setClub(buyingClub);
+        valuationService.revalue(player);  // recalculate value for the new club context
         playerRepository.save(player);
 
         removePlayerFromLineup(sellingClubId, player.getId());

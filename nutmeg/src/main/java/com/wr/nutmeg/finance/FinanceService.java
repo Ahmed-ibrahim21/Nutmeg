@@ -198,6 +198,53 @@ public class FinanceService {
         );
     }
 
+    @Transactional
+    public void processMatchBonuses(Fixture fixture) {
+        int tier = fixture.getLeague() != null ? fixture.getLeague().getTier() : 1;
+        long winBonus = switch (tier) {
+            case 1 -> 50_000L;
+            case 2 -> 25_000L;
+            case 3 -> 10_000L;
+            default -> 5_000L;
+        };
+        long drawBonus = winBonus / 3;
+
+        if (fixture.getHomeScore() > fixture.getAwayScore()) {
+            credit(fixture.getHomeClub().getId(), winBonus, TransactionType.WIN_BONUS, "Match win bonus vs " + fixture.getAwayClub().getName(), fixture.getId());
+        } else if (fixture.getAwayScore() > fixture.getHomeScore()) {
+            credit(fixture.getAwayClub().getId(), winBonus, TransactionType.WIN_BONUS, "Match win bonus vs " + fixture.getHomeClub().getName(), fixture.getId());
+        } else {
+            credit(fixture.getHomeClub().getId(), drawBonus, TransactionType.DRAW_BONUS, "Match draw bonus vs " + fixture.getAwayClub().getName(), fixture.getId());
+            credit(fixture.getAwayClub().getId(), drawBonus, TransactionType.DRAW_BONUS, "Match draw bonus vs " + fixture.getHomeClub().getName(), fixture.getId());
+        }
+    }
+
+    @Transactional
+    public void processCommercialRevenue(UUID leagueId) {
+        List<Club> clubs = clubRepository.findByLeagueId(leagueId);
+        if (clubs.isEmpty()) return;
+        
+        int tier = clubs.get(0).getLeague().getTier();
+        long commercialRevenue = 50_000L * tier;
+        
+        for (Club club : clubs) {
+            credit(club.getId(), commercialRevenue, TransactionType.COMMERCIAL_REVENUE, "Weekly commercial revenue", null);
+        }
+    }
+
+    @Transactional
+    public void processSeasonEndPrizeMoney(UUID leagueId) {
+        List<Club> clubs = clubRepository.findByLeagueId(leagueId);
+        if (clubs.isEmpty()) return;
+        
+        int tier = clubs.get(0).getLeague().getTier();
+        long prizeMoney = 5_000_000L * tier;
+        
+        for (Club club : clubs) {
+            credit(club.getId(), prizeMoney, TransactionType.PRIZE_MONEY, "End of season prize money distribution", null);
+        }
+    }
+
     @Transactional(readOnly = true)
     public FinancialSummary getFinancialSummary(UUID clubId) {
         Club club = clubRepository.findById(clubId)
@@ -221,7 +268,6 @@ public class FinanceService {
 
         long weeklyWageBill = calculateWeeklyWageBill(clubId);
         long netProfitOrLoss = totalIncome - totalExpenses;
-
         return new FinancialSummary(
                 club.getBalance(),
                 totalIncome,
