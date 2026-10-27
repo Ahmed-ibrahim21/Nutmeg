@@ -3,6 +3,15 @@ import { AuthProvider, useAuth } from './AuthContext';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import HomePage from './pages/HomePage';
+import SquadPage from './pages/SquadPage';
+import TacticsPage from './pages/TacticsPage';
+import LineupPage from './pages/LineupPage';
+import LeaguePage from './pages/LeaguePage';
+import TransferMarketPage from './pages/TransferMarketPage';
+import MyTransfersPage from './pages/MyTransfersPage';
+import FinancesPage from './pages/FinancesPage';
+import MatchResultPage from './pages/MatchResultPage';
+import AppShell from './components/AppShell';
 
 function ProtectedRoute({ children }) {
   const { token, loading } = useAuth();
@@ -21,7 +30,7 @@ function ProtectedRoute({ children }) {
     );
   }
 
-  return token ? children : <Navigate to="/login" replace />;
+  return token ? <AppShell>{children}</AppShell> : <Navigate to="/login" replace />;
 }
 
 function GuestRoute({ children }) {
@@ -56,6 +65,70 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <HomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/squad"
+        element={
+          <ProtectedRoute>
+            <SquadPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tactics"
+        element={
+          <ProtectedRoute>
+            <TacticsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/lineup"
+        element={
+          <ProtectedRoute>
+            <LineupPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/league"
+        element={
+          <ProtectedRoute>
+            <LeaguePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/transfers"
+        element={
+          <ProtectedRoute>
+            <TransferMarketPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/transfers/my"
+        element={
+          <ProtectedRoute>
+            <MyTransfersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/finances"
+        element={
+          <ProtectedRoute>
+            <FinancesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/match/:fixtureId"
+        element={
+          <ProtectedRoute>
+            <MatchResultPage />
           </ProtectedRoute>
         }
       />

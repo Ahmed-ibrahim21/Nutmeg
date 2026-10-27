@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import {
   getLeagues,
@@ -17,7 +18,7 @@ function formatCurrency(amount) {
 }
 
 export default function HomePage() {
-  const { token, manager, logout } = useAuth();
+  const { token, manager } = useAuth();
 
   // State
   const [hasClub, setHasClub] = useState(null); // null = loading
@@ -110,28 +111,9 @@ export default function HomePage() {
     checkClubStatus();
   }, [checkClubStatus]);
 
-  // ── Render: Top Navigation ──
-  const renderNav = () => (
-    <nav className="topnav">
-      <div className="topnav__brand">
-        <div className="topnav__brand-icon">⚽</div>
-        <span className="topnav__brand-name">Nutmeg</span>
-      </div>
-      <div className="topnav__user">
-        <span className="topnav__username">{manager?.username}</span>
-        <div className="topnav__avatar">
-          {manager?.username?.charAt(0).toUpperCase() || 'M'}
-        </div>
-        <button id="logout-btn" className="topnav__logout" onClick={logout}>
-          Sign Out
-        </button>
-      </div>
-    </nav>
-  );
-
   // ── Render: Club Selection (no club assigned yet) ──
   const renderClubSelection = () => (
-    <div className="dashboard">
+    <div className="page">
       <div className="dashboard__hero">
         <div className="dashboard__hero-greeting">Welcome, Manager</div>
         <h1 className="dashboard__hero-title">Choose Your Club</h1>
@@ -225,7 +207,7 @@ export default function HomePage() {
     const tactics = dashboardData?.tactics;
 
     return (
-      <div className="dashboard">
+      <div className="page">
         {/* Hero */}
         <div className="dashboard__hero">
           <div className="dashboard__hero-greeting">Welcome back</div>
@@ -234,7 +216,7 @@ export default function HomePage() {
           </h1>
           <p className="dashboard__hero-subtitle">
             {tactics?.formation
-              ? `Playing ${tactics.formation} formation • Coherence: ${tactics.coherenceScore || '—'}%`
+              ? `Playing ${tactics.formation.replace('F_', '').replace(/_/g, '-')} formation • Coherence: ${Math.round((tactics.coherenceScore || 0) * 100)}%`
               : 'Manage your team, transfers, and finances from here.'}
           </p>
         </div>
@@ -261,7 +243,9 @@ export default function HomePage() {
           <div className="stat-card">
             <div className="stat-card__icon stat-card__icon--warning">⚙️</div>
             <div className="stat-card__label">Formation</div>
-            <div className="stat-card__value">{tactics?.formation || '—'}</div>
+            <div className="stat-card__value">
+              {tactics?.formation ? tactics.formation.replace('F_', '').replace(/_/g, '-') : '—'}
+            </div>
           </div>
 
           <div className="stat-card">
@@ -286,37 +270,37 @@ export default function HomePage() {
         </div>
 
         <div className="quick-actions">
-          <div className="quick-action">
+          <Link to="/tactics" className="quick-action">
             <div className="quick-action__icon stat-card__icon--accent">📋</div>
             <div className="quick-action__text">
               <div className="quick-action__title">Manage Tactics</div>
               <div className="quick-action__desc">Set formation & game plan</div>
             </div>
-          </div>
+          </Link>
 
-          <div className="quick-action">
+          <Link to="/lineup" className="quick-action">
             <div className="quick-action__icon stat-card__icon--secondary">⚡</div>
             <div className="quick-action__text">
               <div className="quick-action__title">Set Lineup</div>
               <div className="quick-action__desc">Pick your starting XI</div>
             </div>
-          </div>
+          </Link>
 
-          <div className="quick-action">
+          <Link to="/transfers" className="quick-action">
             <div className="quick-action__icon stat-card__icon--warning">🔄</div>
             <div className="quick-action__text">
               <div className="quick-action__title">Transfer Market</div>
               <div className="quick-action__desc">Buy & sell players</div>
             </div>
-          </div>
+          </Link>
 
-          <div className="quick-action">
+          <Link to="/finances" className="quick-action">
             <div className="quick-action__icon stat-card__icon--danger">💵</div>
             <div className="quick-action__text">
               <div className="quick-action__title">Finances</div>
               <div className="quick-action__desc">View balance & transactions</div>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Squad Overview */}
@@ -324,7 +308,7 @@ export default function HomePage() {
           <>
             <div className="section-header">
               <h2 className="section-header__title">Squad Overview</h2>
-              <span className="section-header__action">{squad.length} players</span>
+              <Link to="/squad" className="section-header__action">{squad.length} players →</Link>
             </div>
 
             <div className="clubs-grid">
@@ -345,9 +329,9 @@ export default function HomePage() {
                         {player.listedOnMarket ? '🏷️' : '⚽'}
                       </div>
                       <div>
-                        <div className="club-card__name">{player.name}</div>
+                        <div className="club-card__name">{player.fullName}</div>
                         <div className="club-card__short">
-                          {player.position} • OVR {player.overall}
+                          {player.position} • OVR {player.overallRating}
                         </div>
                       </div>
                     </div>
@@ -378,7 +362,9 @@ export default function HomePage() {
                 marginTop: 'var(--space-md)',
                 fontSize: '0.85rem',
               }}>
-                + {squad.length - 6} more players in your squad
+                <Link to="/squad" style={{ color: 'var(--clr-accent)' }}>
+                  View all {squad.length} players →
+                </Link>
               </p>
             )}
           </>
@@ -390,23 +376,15 @@ export default function HomePage() {
   // ── Loading State ──
   if (hasClub === null) {
     return (
-      <>
-        {renderNav()}
-        <div className="dashboard">
-          <div className="stats-grid">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="skeleton skeleton--card" style={{ height: 140 }} />
-            ))}
-          </div>
+      <div className="page">
+        <div className="stats-grid">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="skeleton skeleton--card" style={{ height: 140 }} />
+          ))}
         </div>
-      </>
+      </div>
     );
   }
 
-  return (
-    <>
-      {renderNav()}
-      {hasClub ? renderDashboard() : renderClubSelection()}
-    </>
-  );
+  return hasClub ? renderDashboard() : renderClubSelection();
 }
